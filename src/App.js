@@ -11,18 +11,8 @@ import useLocalStorage from 'react-localstorage-hook'
 
 function App() {
   let csSubjectsData = [];
-  let grades = [];
   let tempItemGrade = {};
-  let tempCard = {};
-  
-
-  let gpaxCal = () => {
-
-  }
-
-  let cumalateGpa = () => {
-
-  }
+  const [itemGrade, setItemGrade] = useState({});
 
   let calculateGpax = (subjectItems) => {
     let totalScore = 0
@@ -66,18 +56,7 @@ function App() {
   }
 
   let addOnListerner = (year, semester, group, grade, subject) => {
-      let courseData = getData(group, subject)
-    //   console.log(courseData)
-    //   if(tempItemGrade[`${semester}/${year}`].length === 0) {
-    //       tempItemGrade[`${semester}/${year}`] = [subjectItem(courseData.code, courseData.name, grade, courseData.credit)]
-    //   }
-    //   else {
-    //     tempItemGrade[`${semester}/${year}`] = tempItemGrade[`${semester}/${year}`].push(
-    //         subjectItem(courseData.code, courseData.name, grade, courseData.credit)
-    //     )
-    //   }
-
-
+        let courseData = getData(group, subject)
         let key = `${year}/${semester}`
         if(!(key in tempItemGrade)) {
             tempItemGrade[`${key}`] = {
@@ -86,21 +65,19 @@ function App() {
                 course: [subjectItem(courseData.code, courseData.name, grade, courseData.credit)]
             }
         } else {
-            let courseArray = tempItemGrade[`${key}`].course
-            tempItemGrade[`${key}`] = {
-                totalScore: tempItemGrade[`${key}`].totalScore + (courseData.credit * stringToIntGrade(grade)),
-                totalCredit: tempItemGrade[`${key}`].totalCredit + courseData.credit,
-                course: courseArray.push(
-                    subjectItem(courseData.code, courseData.name, grade, courseData.credit)
-                )
-            }
+            tempItemGrade[`${key}`].totalScore += (courseData.credit * stringToIntGrade(grade))
+            tempItemGrade[`${key}`].totalCredit += courseData.credit
+            tempItemGrade[`${key}`].course.push(subjectItem(courseData.code, courseData.name, grade, courseData.credit))
+
         }
-        console.log(tempItemGrade[`${key}`].course)
+        setItemGrade({
+            ...itemGrade,
+            ...tempItemGrade
+        })
+        console.log(tempItemGrade)
   }
 
   let getData = (groupName, subjectName) => {
-    //   find group name first (index) then find subject
-    // console.log(csSubjectsData)
     let {subjects} = csSubjectsData.find(item => {
         return item.groupName === groupName
     })
@@ -132,6 +109,7 @@ function App() {
   // data ==> [semesterCard] ==> gradeList order by item id ==> loop find subject item and semester card to create.
 
   useEffect(() => {
+      console.log('call from app')
     $(function() {
       $.getJSON("./cs-subject.json",
       data => {
@@ -203,20 +181,8 @@ function App() {
         }
 
     });
-  
-    // $('#groupSelect').val("Language Courses");
-  
-    let grade_selector = $('.grade-select')
-    // console.log(grade_selector)
-    $(document).on('change', ".grade-select", function(e){
-        // alert($(this).val())
-        // console.log(e)
-    });
-    // grade_selector.change(() => {
-    //    alert();
-    // });
     })
-  });
+  }, []);
   
 
   function renderGroupSubject(groupNameArr) {
@@ -325,15 +291,15 @@ function updateSubject(subjectNames) {
                     <h1 style={{color: "white", textAlign: "center"}}>GRADE LIST</h1>
                     <br />
                     
-                    <GradeListComponent/>
+                    <GradeListComponent gradeSemesters= {itemGrade}></GradeListComponent>
 
 
                 </div>
             </div>
 
-            {/* <div className="row">
-                <button type="button" className="btn btn-primary">Calculate GPA</button>
-            </div> */}
+            <div className="row">
+                <button type="button" className="btn btn-primary">Calculate Cumulative GPA</button>
+            </div>
 
            
         </div>
