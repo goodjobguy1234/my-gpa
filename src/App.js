@@ -11,8 +11,9 @@ import useLocalStorage from 'react-localstorage-hook'
 
 function App() {
   let csSubjectsData = [];
-  let tempItemGrade = {};
-  const [itemGrade, setItemGrade] = useState({});
+//   let tempItemGrade = {};
+//   const [itemGrade, setItemGrade] = useState({});
+const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
 
   let calculateGpax = (subjectItems) => {
     let totalScore = 0
@@ -58,23 +59,22 @@ function App() {
   let addOnListerner = (year, semester, group, grade, subject) => {
         let courseData = getData(group, subject)
         let key = `${year}/${semester}`
-        if(!(key in tempItemGrade)) {
-            tempItemGrade[`${key}`] = {
+        if(!(key in itemGrade)) {
+            itemGrade[`${key}`] = {
                 totalScore: courseData.credit * stringToIntGrade(grade),
                 totalCredit: courseData.credit,
                 course: [subjectItem(courseData.code, courseData.name, grade, courseData.credit)]
             }
         } else {
-            tempItemGrade[`${key}`].totalScore += (courseData.credit * stringToIntGrade(grade))
-            tempItemGrade[`${key}`].totalCredit += courseData.credit
-            tempItemGrade[`${key}`].course.push(subjectItem(courseData.code, courseData.name, grade, courseData.credit))
+            itemGrade[`${key}`].totalScore += (courseData.credit * stringToIntGrade(grade))
+            itemGrade[`${key}`].totalCredit += courseData.credit
+            itemGrade[`${key}`].course.push(subjectItem(courseData.code, courseData.name, grade, courseData.credit))
 
         }
         setItemGrade({
-            ...itemGrade,
-            ...tempItemGrade
+            ...itemGrade
         })
-        console.log(tempItemGrade)
+        // console.log(tempItemGrade)
   }
 
   let getData = (groupName, subjectName) => {
@@ -183,7 +183,6 @@ function App() {
     });
     })
   }, []);
-  
 
   function renderGroupSubject(groupNameArr) {
     groupNameArr.forEach(element => {
@@ -291,7 +290,7 @@ function updateSubject(subjectNames) {
                     <h1 style={{color: "white", textAlign: "center"}}>GRADE LIST</h1>
                     <br />
                     
-                    <GradeListComponent gradeSemesters= {itemGrade}></GradeListComponent>
+                    <GradeListComponent gradeSemesters= {itemGrade} setItemGrade = {setItemGrade}></GradeListComponent>
 
 
                 </div>
