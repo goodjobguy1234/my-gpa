@@ -52,9 +52,36 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
         case "F":
             return 0.00
         default:
-            return -1.00
+            return 0.00
       }
   }
+
+  let courseAddStatus = (inputCourseName, semesterCourses) => {
+    let statusString = 'canAdd'
+    if (!(semesterCourses in itemGrade)) {
+        statusString = 'canAdd'
+    } else {
+        if(itemGrade[`${semesterCourses}`].totalCredit > 21) {
+            statusString = 'creditExceed'
+        } else {
+            Object.entries(itemGrade).forEach(entry => {
+                const [key, value] = entry;
+
+                value.course.forEach((item) => {
+                    if(item.name == inputCourseName && 
+                        (item.gpa != 'W' || item.gpa != 'I' || item.gpa != 'S' || item.gpa != 'U' || item.gpa != 'R' || item.gpa != 'TR')) {
+                            statusString = 'duplicate'
+                            
+                    }
+                })
+                
+            })
+           
+        }
+    }
+    return statusString
+  }
+
 
   let addOnListerner = (year, semester, group, grade, subject) => {
         let courseData = getData(group, subject)
@@ -109,7 +136,7 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
   // data ==> [semesterCard] ==> gradeList order by item id ==> loop find subject item and semester card to create.
 
   useEffect(() => {
-      console.log('call from app')
+
     $(function() {
       $.getJSON("./cs-subject.json",
       data => {
@@ -177,7 +204,21 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
             alert(alertString);
             
         } else {
-            addOnListerner(year, semester, groupSubject, gradeSelect, subjectSelect)
+            let status = courseAddStatus(subjectSelect, `${year}/${semester}`)
+            switch (status) {
+                case "canAdd":
+                    addOnListerner(year, semester, groupSubject, gradeSelect, subjectSelect)
+                    break
+
+                case "creditExceed":
+                    alert('Already maxmimum course can take')
+                    break
+
+                case "duplicate":
+                    alert('Course Already Taken')
+                    break
+            }
+               
         }
 
     });
@@ -297,7 +338,7 @@ function updateSubject(subjectNames) {
             </div>
 
             <div className="row">
-                <button type="button" className="btn btn-primary">Calculate Cumulative GPA</button>
+                <button type="button" className="btn btn-primary">Demonstrate GPA Progress</button>
             </div>
 
            
