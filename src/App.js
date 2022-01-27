@@ -2,6 +2,7 @@ import "./App.css";
 import React from 'react';
 import { useState, useRef, useEffect } from "react";
 import GradeListComponent from './GradeListComponent';
+import GraphListComponent from './GraphListComponent';
 import "bootstrap/dist/css/bootstrap.min.css";
 import $ from 'jquery'
 
@@ -340,6 +341,7 @@ function updateSubject(subjectNames) {
             <div className="row">
                 <button type="button" className="btn btn-primary">Demonstrate GPA Progress</button>
             </div>
+            <GraphListComponent></GraphListComponent>
 
            
         </div>
