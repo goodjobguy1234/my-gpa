@@ -11,10 +11,17 @@ import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import useLocalStorage from 'react-localstorage-hook'
 
 function App() {
-  let csSubjectsData = [];
+    let csSubjectsData = [];
+    
 //   let tempItemGrade = {};
 //   const [itemGrade, setItemGrade] = useState({});
-const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
+    const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
+
+    const [gradeGraphData, setGradeGraphData] = useState({
+        labels: [],
+        datasets: []
+    });
+    const [totalGrade, setTotalGradeData] = useState();
 
   let calculateGpax = (subjectItems) => {
     let totalScore = 0
@@ -28,6 +35,17 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
         totalCredit: totalCredit,
         totalScore: totalScore
     }
+  }
+
+  const orderBySemester = () => {
+      let newSorted = {}
+      console.log('call sorted')
+      Object.keys(itemGrade)
+      .sort().forEach(function(v, i) {
+        console.log(v, itemGrade[v]);
+        newSorted[v] = itemGrade[v]
+     });
+     return newSorted
   }
 
   let stringToIntGrade = (stringGpa) => {
@@ -59,10 +77,10 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
 
   let courseAddStatus = (inputCourseName, semesterCourses) => {
     let statusString = 'canAdd'
-    if (!(semesterCourses in itemGrade)) {
-        statusString = 'canAdd'
-    } else {
-        if(itemGrade[`${semesterCourses}`].totalCredit > 21) {
+        if(itemGrade === {}) {
+            return 'canAdd'
+        }
+        if(semesterCourses in itemGrade && itemGrade[`${semesterCourses}`].totalCredit > 21) {
             statusString = 'creditExceed'
         } else {
             Object.entries(itemGrade).forEach(entry => {
@@ -79,7 +97,6 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
             })
            
         }
-    }
     return statusString
   }
 
@@ -99,9 +116,13 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
             itemGrade[`${key}`].course.push(subjectItem(courseData.code, courseData.name, grade, courseData.credit))
 
         }
-        setItemGrade({
-            ...itemGrade
-        })
+
+        
+        
+      
+        setItemGrade(
+            orderBySemester()
+        )
         // console.log(tempItemGrade)
   }
 
@@ -132,6 +153,46 @@ const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
       gpa: courseGrade,
       credit: courseCredit
     }
+  }
+
+  const demonstrateGPACallBack = () => {
+    let gpaListData = []
+    let totalCourseItem = []
+    gradeGraphData.labels = []
+    gradeGraphData.datasets = []
+
+    Object.entries(itemGrade).forEach(entry => {
+        const [key, value] = entry;
+
+        gradeGraphData.labels.push(key)
+        
+        if(value === undefined) {
+            itemGrade[`${key}`].course = []
+            itemGrade[`${key}`].totalCredit = 0
+            itemGrade[`${key}`].totalScore = 0 
+
+        } 
+        
+        gpaListData.push((itemGrade[`${key}`].totalScore/ itemGrade[`${key}`].totalCredit).toFixed(2))
+
+        if(itemGrade[`${key}`].course != []) {
+            totalCourseItem.push(...(itemGrade[`${key}`].course))
+        }
+    })
+
+    gradeGraphData.datasets.push({
+        label: `GPA`,
+        data: gpaListData,
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      })
+
+    let {totalCredit, totalScore} = calculateGpax(totalCourseItem)
+    
+
+    setItemGrade({...itemGrade})
+    setGradeGraphData({...gradeGraphData})
+    setTotalGradeData((totalScore/ totalCredit).toFixed(2))
   }
 
   // data ==> [semesterCard] ==> gradeList order by item id ==> loop find subject item and semester card to create.
@@ -339,9 +400,13 @@ function updateSubject(subjectNames) {
             </div>
 
             <div className="row">
-                <button type="button" className="btn btn-primary">Demonstrate GPA Progress</button>
+                <button type="button" className="btn btn-primary" onClick={demonstrateGPACallBack}>Demonstrate GPA Progress</button>
             </div>
-            <GraphListComponent></GraphListComponent>
+
+            <div className="row my-5">
+                <GraphListComponent totalGpa = {totalGrade} eachGpa = {gradeGraphData} ></GraphListComponent>
+            </div>
+            
 
            
         </div>

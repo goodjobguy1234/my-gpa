@@ -15,7 +15,7 @@ function GradeListComponent({gradeSemesters, setItemGrade}) {
         Object.entries(gradeSemesters).forEach(entry => {
             const [key, value] = entry;
           
-            if(value.course.length > 0){
+            if(value !== undefined && value.course.length > 0){
                 cardList.push(
                     (
                         <div className="container-fluid mx-0 px-0 pb-5 mb-4"
