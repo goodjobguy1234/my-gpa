@@ -80,8 +80,8 @@ function App() {
         if(itemGrade === {}) {
             return 'canAdd'
         }
-        if(semesterCourses in itemGrade && itemGrade[`${semesterCourses}`].totalCredit > 21) {
-            statusString = 'creditExceed'
+        if(semesterCourses in itemGrade && itemGrade[`${semesterCourses}`].totalCredit >= 21) {
+            return 'creditExceed'
         } else {
             Object.entries(itemGrade).forEach(entry => {
                 const [key, value] = entry;
