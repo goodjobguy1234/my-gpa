@@ -3,7 +3,7 @@ import { Container, Row, Col, Table, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BsFillXCircleFill} from "react-icons/bs";
 
-function GradeListComponent({gradeSemesters, setItemGrade}) {
+function GradeListComponent({gradeSemesters, setItemGrade, setlocalDataItemGrade}) {
     const [cardLists, setCard] = useState([]);
 
     useEffect(() => {
@@ -117,7 +117,9 @@ function GradeListComponent({gradeSemesters, setItemGrade}) {
             gradeSemesters[`${semesterKey}`].totalScore -= (stringToIntGrade(deletedCourse.gpa) * deletedCourse.credit)
         }
         
-        setItemGrade({...gradeSemesters})
+        let newGradeSemester = {...gradeSemesters}
+        setItemGrade(newGradeSemester)
+        setlocalDataItemGrade(JSON.stringify(newGradeSemester))
         
     }
     

@@ -8,14 +8,16 @@ import $ from 'jquery'
 
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 
-import useLocalStorage from 'react-localstorage-hook'
+// import useLocalStorage from 'react-localstorage-hook'
+import { useLocalStorage } from 'react-use';
 
 function App() {
     let csSubjectsData = [];
-    
+    let initialItemGrade = {};
 //   let tempItemGrade = {};
-//   const [itemGrade, setItemGrade] = useState({});
-    const [itemGrade, setItemGrade] = useLocalStorage("itemGrade",{});
+  
+    const [localDataitemGrade, setlocalDataItemGrade, clearItemGrade] = useLocalStorage("itemGrade",JSON.stringify({}));
+    let [itemGrade, setItemGrade] = useState(JSON.parse(localDataitemGrade));
 
     const [gradeGraphData, setGradeGraphData] = useState({
         labels: [],
@@ -39,8 +41,7 @@ function App() {
 
   const orderBySemester = () => {
       let newSorted = {}
-      console.log('call sorted')
-      Object.keys(itemGrade)
+      Object.keys({...itemGrade})
       .sort().forEach(function(v, i) {
         console.log(v, itemGrade[v]);
         newSorted[v] = itemGrade[v]
@@ -76,13 +77,11 @@ function App() {
   }
 
   let courseAddStatus = (inputCourseName, semesterCourses) => {
-    let statusString = 'canAdd'
-        if(itemGrade === {}) {
-            return 'canAdd'
-        }
+        let statusString = 'canAdd'
         if(semesterCourses in itemGrade && itemGrade[`${semesterCourses}`].totalCredit >= 21) {
             return 'creditExceed'
-        } else {
+        } 
+        else {
             Object.entries(itemGrade).forEach(entry => {
                 const [key, value] = entry;
 
@@ -102,6 +101,7 @@ function App() {
 
 
   let addOnListerner = (year, semester, group, grade, subject) => {
+    
         let courseData = getData(group, subject)
         let key = `${year}/${semester}`
         if(!(key in itemGrade)) {
@@ -116,13 +116,10 @@ function App() {
             itemGrade[`${key}`].course.push(subjectItem(courseData.code, courseData.name, grade, courseData.credit))
 
         }
-
         
-        
-      
-        setItemGrade(
-            orderBySemester()
-        )
+        let orderedGradeSemester = orderBySemester()
+        setItemGrade(orderedGradeSemester)
+        setlocalDataItemGrade(JSON.stringify(orderedGradeSemester))
         // console.log(tempItemGrade)
   }
 
@@ -196,9 +193,8 @@ function App() {
   }
 
   // data ==> [semesterCard] ==> gradeList order by item id ==> loop find subject item and semester card to create.
-
+ 
   useEffect(() => {
-
     $(function() {
       $.getJSON("./cs-subject.json",
       data => {
@@ -230,7 +226,7 @@ function App() {
         updateSubject(subjectNames);
     });
   
-    $('#addbtn').click(() => {
+    $('#addbtn').on('click', () => {
         let year = $('#yearSelect').val();
         let semester = $('#semesterSelect').val();
         let groupSubject = $('#groupSelect').val();
@@ -384,8 +380,8 @@ function updateSubject(subjectNames) {
                         </tbody>
                     </table>
                     <button id="addbtn" style={{marginTop: "10px", marginBottom: "20px"}} type="button"
-                        className="btn btn-primary">ADD
-                        SUBJECT</button>
+                        className="btn btn-primary" 
+                        >ADD SUBJECT</button>
                 </div>
 
                 <div className="col-9"
@@ -393,7 +389,7 @@ function updateSubject(subjectNames) {
                     <h1 style={{color: "white", textAlign: "center"}}>GRADE LIST</h1>
                     <br />
                     
-                    <GradeListComponent gradeSemesters= {itemGrade} setItemGrade = {setItemGrade}></GradeListComponent>
+                    <GradeListComponent gradeSemesters= {itemGrade} setItemGrade = {setItemGrade} setlocalDataItemGrade = {setlocalDataItemGrade}></GradeListComponent>
 
 
                 </div>
